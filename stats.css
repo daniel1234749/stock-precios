@@ -1,0 +1,221 @@
+/* ============================================================
+   stats.css — Modal de estadísticas de ventas
+   Usa las mismas variables de precios.css
+   ============================================================ */
+
+/* ── Modal estadísticas ── */
+#modalStats {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(6px);
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+#modalStats .stats-content {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 780px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px var(--accent-glow);
+  animation: slideUp 0.25s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.stats-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.stats-header-info { flex: 1; }
+
+.stats-cod {
+  font-family: var(--font-data);
+  font-size: 0.72rem;
+  color: var(--accent-text);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.stats-nombre {
+  font-family: var(--font-data);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+/* Botones de sucursal */
+.sucursal-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 16px 24px 0;
+  flex-wrap: wrap;
+}
+
+.tab-suc {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  font-family: var(--font-data);
+  font-size: 0.72rem;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all var(--transition);
+  text-transform: uppercase;
+}
+
+.tab-suc:hover {
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.tab-suc.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0d0d0d;
+  font-weight: 700;
+}
+
+/* KPIs rápidos */
+.stats-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 16px 24px;
+}
+
+.kpi-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  text-align: center;
+}
+
+.kpi-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  font-family: var(--font-data);
+  margin-bottom: 6px;
+}
+
+.kpi-value {
+  font-family: var(--font-data);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--accent-text);
+}
+
+.kpi-value.warning { color: var(--warning); }
+.kpi-value.danger  { color: var(--danger); }
+
+/* Área del gráfico */
+.chart-area {
+  padding: 0 24px 20px;
+  position: relative;
+}
+
+.chart-title {
+  font-family: var(--font-data);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.chart-wrap {
+  position: relative;
+  height: 220px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+canvas#chartVentas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Tabla mensual */
+.stats-tabla-wrap {
+  padding: 0 24px 24px;
+}
+
+.stats-tabla-title {
+  font-family: var(--font-data);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.stats-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-data);
+  font-size: 0.78rem;
+}
+
+.stats-tabla thead th {
+  background: var(--thead-bg);
+  color: var(--thead-color);
+  padding: 8px 10px;
+  text-align: center;
+  border-bottom: 2px solid var(--accent);
+  font-size: 0.68rem;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.stats-tabla tbody td {
+  padding: 8px 10px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+}
+
+.stats-tabla tbody tr:hover { background: var(--bg-hover); }
+
+.stats-tabla td.mes-label {
+  text-align: left;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+}
+
+.bar-inline {
+  display: inline-block;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 99px;
+  margin-left: 6px;
+  opacity: 0.6;
+  vertical-align: middle;
+  transition: width 0.4s ease;
+}
+
+.stats-tabla td.valor-cero { color: var(--text-muted); }
+.stats-tabla td.valor-alto { color: var(--accent); font-weight: 700; }

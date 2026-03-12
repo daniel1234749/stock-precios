@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📦 Lista de Precios – Mayorista Emanuel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="precios.css" />
+  <link rel="stylesheet" href="tabla.css" />
+  <link rel="stylesheet" href="stats.css" />
+</head>
+
+<body>
+
+  <!-- ====== HEADER ====== -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <span class="brand-icon">▦</span>
+        <div>
+          <h1 class="brand-title">Mayorista Emanuel</h1>
+          <p class="brand-sub">Stock &amp; Ventas</p>
+        </div>
+      </div>
+      <div class="header-controls">
+        <p id="ultima-actualizacion" class="update-badge"></p>
+        <button class="theme-toggle" id="themeToggle" title="Cambiar tema" aria-label="Cambiar tema">
+          <span class="theme-icon-dark">🌙</span>
+          <span class="theme-icon-light">☀️</span>
+          <span class="toggle-track"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ====== MAIN ====== -->
+  <main class="main-content">
+
+    <!-- Barra de búsqueda -->
+    <div class="search-bar">
+      <div class="search-input-wrap">
+        <span class="search-icon">⌕</span>
+        <input type="text" id="buscador" placeholder="Buscar por código o producto… (Enter)" autocomplete="off"/>
+        <button class="search-clear" id="btnLimpiar" title="Limpiar búsqueda">✕</button>
+      </div>
+      <div class="action-buttons">
+        <button id="btnMostrar" class="btn btn-secondary">
+          <span>🛒</span> Ver seleccionados
+        </button>
+        <a href="precompra.html" class="btn btn-primary" id="btnPrecompra">
+          <span>📦</span> Pre-compra
+        </a>
+      </div>
+    </div>
+
+    <!-- Tabla con scroll horizontal Y vertical -->
+    <div class="table-container">
+      <div class="table-container-inner">
+        <table id="tablaPrincipal">
+          <thead id="encabezado"></thead>
+          <tbody id="cuerpo"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ====== MODAL SELECCIONADOS ====== -->
+  <div id="modalSeleccion" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>🧾 Productos seleccionados</h2>
+        <button class="modal-close" id="btnCerrar">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="listaSeleccion"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnVaciar"   class="btn btn-ghost">🧹 Vaciar</button>
+        <button id="btnExportar" class="btn btn-primary">📤 Exportar Excel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== MODAL ESTADÍSTICAS ====== -->
+  <div id="modalStats" class="modal">
+    <div class="stats-content">
+      <div class="stats-header">
+        <div class="stats-header-info">
+          <p class="stats-cod" id="statsCod">COD 000</p>
+          <h2 class="stats-nombre" id="statsNombre">Nombre del producto</h2>
+        </div>
+        <button class="modal-close" id="btnCerrarStats">✕</button>
+      </div>
+      <div class="sucursal-tabs">
+        <button class="tab-suc active" data-suc="fair">🏪 Fair</button>
+        <button class="tab-suc" data-suc="burzaco">🏪 Burzaco</button>
+        <button class="tab-suc" data-suc="korn">🏪 A. Korn</button>
+        <button class="tab-suc" data-suc="tucuman">🏪 Tucumán</button>
+        <button class="tab-suc" data-suc="total">📊 Total</button>
+      </div>
+      <div class="stats-kpis">
+        <div class="kpi-card">
+          <div class="kpi-label">Total 12 meses</div>
+          <div class="kpi-value" id="kpiTotal">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Promedio mensual</div>
+          <div class="kpi-value" id="kpiProm">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Últimos 3 meses</div>
+          <div class="kpi-value" id="kpiUlt3">—</div>
+        </div>
+      </div>
+      <div class="chart-area">
+        <p class="chart-title">Evolución de ventas — últimos 12 meses</p>
+        <div class="chart-wrap">
+          <canvas id="chartVentas"></canvas>
+        </div>
+      </div>
+      <div class="stats-tabla-wrap">
+        <p class="stats-tabla-title">Detalle por mes</p>
+        <table class="stats-tabla">
+          <thead>
+            <tr>
+              <th>Mes</th>
+              <th>Ventas (uds)</th>
+            </tr>
+          </thead>
+          <tbody id="statsTablaBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="precios.js"></script>
+  <script src="stats.js"></script>
+
+  <script>
+    // ── Theme toggle ──
+    const root = document.documentElement;
+    const btn  = document.getElementById("themeToggle");
+    const saved = localStorage.getItem("theme") || "dark";
+    root.setAttribute("data-theme", saved);
+    btn.addEventListener("click", () => {
+      const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      root.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
+    });
+
+    // ── Botón limpiar buscador ──
+    const buscadorEl = document.getElementById("buscador");
+    const btnLimpiar = document.getElementById("btnLimpiar");
+    btnLimpiar.addEventListener("click", () => {
+      buscadorEl.value = "";
+      buscadorEl.focus();
+      if (typeof datosOriginales !== "undefined") renderTabla(datosOriginales);
+    });
+
+    // ── Abrir precompra en una sola ventana ──
+    document.getElementById("btnPrecompra").addEventListener("click", (e) => {
+      e.preventDefault();
+      const win = window.open("precompra.html", "ventanaPrecompra");
+      if (win) win.focus();
+    });
+  </script>
+</body>
+</html>

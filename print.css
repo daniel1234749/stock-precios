@@ -1,0 +1,99 @@
+/* print.css — Mayorista Emanuel */
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap');
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #fff;
+  color: #111;
+  margin: 0;
+  padding: 24px;
+}
+
+.print-container {
+  max-width: 1100px;
+  margin: auto;
+}
+
+.print-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  border-bottom: 3px solid #111;
+  padding-bottom: 16px;
+}
+
+.print-brand {
+  font-family: 'Space Mono', monospace;
+}
+
+.print-brand h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.print-brand p {
+  font-size: 0.75rem;
+  color: #555;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.print-meta {
+  text-align: right;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.78rem;
+  color: #333;
+  line-height: 1.8;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  font-family: 'Space Mono', monospace;
+  margin-bottom: 24px;
+}
+
+thead th {
+  background: #111;
+  color: #00e676;
+  padding: 8px 10px;
+  text-align: center;
+  font-size: 0.72rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border: 1px solid #111;
+}
+
+tbody td {
+  padding: 7px 10px;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+
+tbody td:nth-child(2) { text-align: left; }
+
+tbody tr:nth-child(even) { background: #f5f5f5; }
+
+.print-totales {
+  border-top: 3px solid #111;
+  padding-top: 14px;
+  font-family: 'Space Mono', monospace;
+  display: flex;
+  gap: 32px;
+  justify-content: flex-end;
+}
+
+.print-totales span {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #c79a00;
+}
+
+@media print {
+  body { padding: 0; }
+  .no-print { display: none !important; }
+}

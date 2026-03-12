@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Imprimir pedido — Mayorista Emanuel</title>
+  <link rel="stylesheet" href="print.css">
+</head>
+<body>
+
+  <div class="print-container">
+
+    <div class="print-header">
+      <div class="print-brand">
+        <h1>▦ Mayorista Emanuel</h1>
+        <p>Pedido de compra</p>
+      </div>
+      <div class="print-meta" id="infoPedido"></div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Producto</th>
+          <th>UXB</th>
+          <th>Cantidad</th>
+          <th>Costo unit.</th>
+          <th>Subtotal</th>
+        </tr>
+      </thead>
+      <tbody id="tablaPrint"></tbody>
+    </table>
+
+    <div class="print-totales">
+      <div>Total: <span id="totalPrint"></span></div>
+    </div>
+
+  </div>
+
+  <script src="print.js"></script>
+</body>
+</html>

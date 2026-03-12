@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>📦 Pre-compra – Mayorista Emanuel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="precompra.css">
+</head>
+
+<body class="precompra">
+
+  <!-- ====== HEADER ====== -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <a href="index.html" class="back-link" title="Volver al inicio">←</a>
+        <span class="brand-icon">▦</span>
+        <div>
+          <h1 class="brand-title">Mayorista Emanuel</h1>
+          <p class="brand-sub">Pre-compra</p>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <button class="theme-toggle" id="themeToggle" title="Cambiar tema">
+          <span class="theme-icon-dark">🌙</span>
+          <span class="theme-icon-light">☀️</span>
+          <span class="toggle-track"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ====== MAIN ====== -->
+  <main class="main-content">
+
+    <!-- Barra de búsqueda + acciones -->
+    <div class="search-bar">
+      <div class="search-input-wrap">
+        <span class="search-icon">⌕</span>
+        <input type="text" id="buscador"
+          placeholder="Buscar producto y presionar ENTER…"
+          autocomplete="off"/>
+      </div>
+
+      <div class="action-buttons">
+        <button id="btnPedidosGuardados" class="btn btn-secondary">📂 Pedidos</button>
+        <button id="btnNuevoPedido"      class="btn btn-secondary">➕ Nuevo</button>
+        <button id="btnGuardarPedido"    class="btn btn-primary">💾 Guardar</button>
+        <button id="btnImprimir"         class="btn btn-secondary">🖨 Imprimir</button>
+        <button id="btnExcel"            class="btn btn-secondary">📥 Excel</button>
+        <button id="btnVaciar"           class="btn btn-ghost">🗑 Vaciar</button>
+      </div>
+    </div>
+
+    <!-- Panel de totales + semáforo -->
+    <div class="totales-panel">
+      <div class="totales-card">
+        <span class="totales-label">Total pedido</span>
+        <span class="totales-value" id="totalPedido">$ 0</span>
+      </div>
+      <div class="totales-card">
+        <span class="totales-label">Rentabilidad</span>
+        <span class="totales-value" id="rentabilidadPedido">0 %</span>
+      </div>
+
+      <!-- Semáforo -->
+      <div class="semaforo-wrap">
+        <div class="semaforo-vertical" id="semaforoVertical">
+          <div class="luz luz-roja"></div>
+          <div class="luz luz-amarilla"></div>
+          <div class="luz luz-verde"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla precompra -->
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Producto</th>
+            <th>UXB</th>
+            <th>Cantidad</th>
+            <th>Costo prov.</th>
+            <th>Precio nuestro</th>
+            <th>Subtotal</th>
+            <th>Margen %</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="cuerpoPrecompra"></tbody>
+      </table>
+    </div>
+
+  </main>
+
+  <!-- ====== MODAL BÚSQUEDA ====== -->
+  <div id="modalSeleccion" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Seleccionar producto</h2>
+        <button class="modal-close" id="btnCerrar">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="listaSeleccion"></div>
+        <div id="detalleStock" style="display:none; margin-top:15px;"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnVolver" class="btn btn-secondary" style="display:none;">⬅ Volver</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== MODAL PEDIDOS GUARDADOS ====== -->
+  <div id="modalPedidos" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>📂 Pedidos guardados</h2>
+        <button class="modal-close" id="cerrarPedidos">✕</button>
+      </div>
+      <div class="modal-body">
+        <table class="tabla-modal">
+          <thead>
+            <tr>
+              <th>Pedido</th>
+              <th>Proveedor</th>
+              <th>Fecha</th>
+              <th>Total</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="listaPedidos"></tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button id="cerrarPedidosFooter" class="btn btn-secondary">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SheetJS para exportar Excel -->
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <script src="precompra.js" defer></script>
+
+  <script>
+    // ── Theme toggle ──
+    const root = document.documentElement;
+    const btn  = document.getElementById("themeToggle");
+    const saved = localStorage.getItem("theme") || "dark";
+    root.setAttribute("data-theme", saved);
+    btn.addEventListener("click", () => {
+      const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      root.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
+    });
+
+    // cerrar pedidos footer
+    document.getElementById("cerrarPedidosFooter")?.addEventListener("click", () => {
+      document.getElementById("modalPedidos").style.display = "none";
+    });
+  </script>
+</body>
+</html>
