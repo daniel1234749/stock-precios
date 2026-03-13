@@ -86,3 +86,29 @@
   overflow-y: auto;
   overflow-x: auto;
 }
+
+/* ── Separador visual ventas / stock ── */
+#tablaPrincipal th.col-sep,
+#tablaPrincipal td.col-sep {
+  border-left: 2px solid var(--accent-dim, #00e67644) !important;
+  padding-left: 14px;
+}
+
+[data-theme="dark"] #tablaPrincipal th.col-sep,
+[data-theme="dark"] #tablaPrincipal td.col-sep {
+  border-left-color: #00e67655 !important;
+}
+
+[data-theme="light"] #tablaPrincipal th.col-sep,
+[data-theme="light"] #tablaPrincipal td.col-sep {
+  border-left-color: #0066cc55 !important;
+}
+
+/* ── Encabezado resaltado ── */
+#tablaPrincipal thead tr {
+  background: rgba(0, 230, 118, 0.10) !important;
+}
+
+[data-theme="light"] #tablaPrincipal thead tr {
+  background: rgba(0, 102, 204, 0.08) !important;
+}

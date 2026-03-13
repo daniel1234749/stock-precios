@@ -63,6 +63,26 @@ function resolveKeyForAlias(alias, rows = []) {
 let datosOriginales = [];
 let seleccionados = JSON.parse(localStorage.getItem("seleccionados") || "[]");
 
+// Recalcular campos calculados que no se guardan en localStorage
+function recalcularCampos(items) {
+  items.forEach(p => {
+    const vtas = ["vtafair","vtaburza","vtakorn","vtatucu"]
+      .map(a => resolveKeyForAlias(a, items))
+      .filter(Boolean);
+    let tv = 0;
+    vtas.forEach(col => { tv += parseFloat(p[col]) || 0; });
+    p.totalVentas = parseFloat(tv.toFixed(1));
+
+    const stocks = ["fair","burza","korn","tucu","cdistrib"]
+      .map(a => resolveKeyForAlias(a, items))
+      .filter(Boolean);
+    let st = 0;
+    stocks.forEach(col => { st += parseFloat(p[col]) || 0; });
+    p.stockTotal = parseFloat(st.toFixed(1));
+  });
+}
+if (seleccionados.length) recalcularCampos(seleccionados);
+
 // ---------- ELEMENTOS ----------
 const tabla = document.getElementById("tablaPrincipal");
 const theadEl = document.getElementById("encabezado");
@@ -129,14 +149,28 @@ function renderTabla(data) {
     if (key && !columnasReales.includes(key)) columnasReales.push(key);
   }
 
+  // Excluir campos calculados que solo van en modal/Excel
+  const camposExcluidos = ["stockTotal", "totalVentas", "codigoProveedor", "precioProveedor"];
   todasClaves.forEach(k => {
-    if (!columnasReales.includes(k)) columnasReales.push(k);
+    if (!columnasReales.includes(k) && !camposExcluidos.includes(k) && k !== "stockTotal") columnasReales.push(k);
   });
+  // Eliminar stockTotal si por alguna razón entró
+  const idxST = columnasReales.indexOf("stockTotal");
+  if (idxST !== -1) columnasReales.splice(idxST, 1);
 
   // Encabezado
   const trHead = document.createElement("tr");
+  const colSepFair    = resolveKeyForAlias("fair",    data);
+  const colSepVtafair = resolveKeyForAlias("vtafair", data);
+  const colSepPrecios = resolveKeyForAlias("precios", data);
+  const colId1        = resolveKeyForAlias("cod",      data);
+  const colId2        = resolveKeyForAlias("productos", data);
   columnasReales.forEach(colKey => {
     const th = document.createElement("th");
+    if (colSepFair    && colKey === colSepFair)    th.classList.add("col-sep");
+    if (colSepVtafair && colKey === colSepVtafair) th.classList.add("col-sep");
+    if (colSepPrecios && colKey === colSepPrecios) th.classList.add("col-sep");
+    if ((colId1 && colKey === colId1) || (colId2 && colKey === colId2)) th.classList.add("col-id");
     let label = lookupAliasForColumn(colKey);
     if (label.toLowerCase() === "totalventas") label = "Tot.Vtas";
     th.textContent = label;
@@ -154,10 +188,17 @@ function renderTabla(data) {
   const columnasVentas = ["vtafair", "vtaburza", "vtakorn", "vtatucu"];
   const columnasVentasReales = columnasVentas.map(a => resolveKeyForAlias(a, data)).filter(Boolean);
 
+  const columnasStock = ["fair", "burza", "korn", "tucu", "cdistrib"];
+  const columnasStockReales = columnasStock.map(a => resolveKeyForAlias(a, data)).filter(Boolean);
+
   data.forEach(item => {
     let totalVentas = 0;
     columnasVentasReales.forEach(col => { totalVentas += parseFloat(item[col]) || 0; });
     item.totalVentas = parseFloat(totalVentas.toFixed(1));
+
+    let stockTotal = 0;
+    columnasStockReales.forEach(col => { stockTotal += parseFloat(item[col]) || 0; });
+    item.stockTotal = parseFloat(stockTotal.toFixed(1));
   });
   data.sort((a, b) => b.totalVentas - a.totalVentas);
 
@@ -314,6 +355,8 @@ function toggleSeleccionByIdAndRow(id, row, btnEl) {
       const copia = Object.assign({}, row);
       copia.codigoProveedor = codProv;
       copia.precioProveedor = precioProv;
+      // Asegurar campos calculados en la copia
+      recalcularCampos([copia]);
       seleccionados.push(copia);
       btnEl.classList.add("agregado");
       btnEl.textContent = "✓ Agregado";
@@ -341,11 +384,21 @@ function mostrarModal() {
     return;
   }
 
-  const firstSel = seleccionados[0] || {};
+  // Orden fijo de columnas en modal
   const modalKeys = ["codigoProveedor"];
-
-  Object.keys(firstSel).forEach(k => {
-    if (!modalKeys.includes(k) && k !== "precioProveedor") modalKeys.push(k);
+  const ORDEN_MODAL = [
+    "codigos", "productos", "uxb",
+    "vtafair", "vtaburza", "vtakorn", "vtatucu",
+    "totalVentas",
+    "fair", "burza", "korn", "tucu",
+    "cdistrib", "stockTotal", "precios"
+  ];
+  ORDEN_MODAL.forEach(alias => {
+    const key = resolveKeyForAlias(alias, seleccionados) || resolveKeyForAlias(alias, datosOriginales);
+    if (key && !modalKeys.includes(key)) modalKeys.push(key);
+    // totalVentas es campo calculado, no viene de resolveKeyForAlias
+    if (alias === "totalVentas" && !modalKeys.includes("totalVentas")) modalKeys.push("totalVentas");
+    if (alias === "stockTotal" && !modalKeys.includes("stockTotal")) modalKeys.push("stockTotal");
   });
   if (!modalKeys.includes("precioProveedor")) modalKeys.push("precioProveedor");
   modalKeys.push("Margen %");
@@ -406,13 +459,19 @@ function mostrarModal() {
 btnExportar && btnExportar.addEventListener("click", () => {
   if (!seleccionados.length) return alert("No hay productos para exportar.");
 
+  const ORDEN_EXPORT = [
+    "codigos", "productos", "uxb",
+    "vtafair", "vtaburza", "vtakorn", "vtatucu",
+    "totalVentas",
+    "fair", "burza", "korn", "tucu",
+    "cdistrib", "stockTotal", "precios"
+  ];
   const exportKeys = ["codigoProveedor"];
-  for (const alias of ordenColumnas) {
+  ORDEN_EXPORT.forEach(alias => {
     const key = resolveKeyForAlias(alias, seleccionados) || resolveKeyForAlias(alias, datosOriginales);
-    if (key && !exportKeys.includes(key) && key !== "codigoProveedor") exportKeys.push(key);
-  }
-  Object.keys(seleccionados[0] || {}).forEach(k => {
-    if (!exportKeys.includes(k) && k !== "precioProveedor" && k !== "codigoProveedor") exportKeys.push(k);
+    if (key && !exportKeys.includes(key)) exportKeys.push(key);
+    if (alias === "totalVentas" && !exportKeys.includes("totalVentas")) exportKeys.push("totalVentas");
+    if (alias === "stockTotal" && !exportKeys.includes("stockTotal")) exportKeys.push("stockTotal");
   });
   if (!exportKeys.includes("precioProveedor")) exportKeys.push("precioProveedor");
   exportKeys.push("Margen %");
@@ -429,6 +488,12 @@ btnExportar && btnExportar.addEventListener("click", () => {
         obj[lookupAliasForColumn(k)] = !isNaN(n)
           ? n.toLocaleString("es-AR", { style: "currency", currency: "ARS" })
           : (p.precioProveedor ?? "");
+      } else if (k === resolveKeyForAlias("precios", seleccionados) || k === resolveKeyForAlias("precios", datosOriginales)) {
+        // Columna precios con formato moneda ARS
+        const n = parseFloat(String(p[k] || 0).replace(",", ".")) || 0;
+        obj[lookupAliasForColumn(k)] = !isNaN(n) && n > 0
+          ? n.toLocaleString("es-AR", { style: "currency", currency: "ARS" })
+          : (p[k] ?? "");
       } else {
         obj[lookupAliasForColumn(k)] = p[k] ?? "";
       }
