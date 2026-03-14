@@ -1,0 +1,187 @@
+/* ============================================================
+   MÓDULO INFLACIÓN
+   ============================================================ */
+
+/* ── Modal ── */
+#modalInflacion {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.inf-content {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  width: min(860px, 100%);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+}
+
+.inf-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.inf-header h2 {
+  font-family: var(--font-data);
+  font-size: 1rem;
+  color: var(--accent);
+  margin: 0;
+}
+
+/* ── Tabs ── */
+.inf-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 12px 24px 0;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.tab-inf {
+  font-family: var(--font-data);
+  font-size: 0.75rem;
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.2s;
+}
+
+.tab-inf.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ── Panels ── */
+.inf-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+}
+
+.inf-panel { display: none; }
+.inf-panel.active { display: block; }
+
+/* ── Tabla histórica ── */
+.inf-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-data);
+  font-size: 0.82rem;
+}
+
+.inf-tabla th {
+  text-align: left;
+  padding: 8px 12px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  font-weight: 500;
+}
+
+.inf-tabla td {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border-subtle, #ffffff0a);
+}
+
+.inf-alta  { color: #ff1744; font-weight: 700; }
+.inf-media { color: #ffd600; font-weight: 600; }
+.inf-baja  { color: #00e676; font-weight: 600; }
+
+[data-theme="light"] .inf-baja  { color: #0066cc; }
+[data-theme="light"] .inf-media { color: #b45309; }
+[data-theme="light"] .inf-alta  { color: #cc2200; }
+
+/* ── Gráfico ── */
+.inf-chart-wrap {
+  height: 220px;
+  margin-bottom: 20px;
+}
+
+/* ── Calculadora / Simulador ── */
+.calc-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 480px;
+}
+
+.calc-form label {
+  font-family: var(--font-data);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.calc-form select,
+.calc-form input {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 6px);
+  color: var(--text-primary);
+  font-family: var(--font-data);
+  font-size: 0.85rem;
+  padding: 8px 12px;
+}
+
+.calc-form .btn-calc {
+  align-self: flex-start;
+  font-family: var(--font-data);
+  font-size: 0.8rem;
+  padding: 9px 20px;
+  border-radius: 20px;
+  border: none;
+  background: var(--accent);
+  color: #000;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.calc-form .btn-calc:hover { opacity: 0.85; }
+
+.calc-result-box {
+  margin-top: 20px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 10px);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.calc-result-row {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-data);
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-subtle, #ffffff0a);
+  padding-bottom: 8px;
+}
+.calc-result-row:last-child { border-bottom: none; padding-bottom: 0; }
+.calc-result-row strong { color: var(--text-primary); }
+
+.calc-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}

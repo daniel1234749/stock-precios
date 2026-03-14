@@ -202,6 +202,35 @@ function renderTabla(data) {
   });
   data.sort((a, b) => b.totalVentas - a.totalVentas);
 
+  // ── Badge de productos críticos en botón Pre-compra ──
+  const DIAS_CRITICO = 15;
+  let criticos = 0;
+  data.forEach(item => {
+    const sucursales = [
+      { s: parseFloat(item.fair_stock    ?? 0), v: parseFloat(item.fair_ventas    ?? 0) },
+      { s: parseFloat(item.burzaco_stock ?? 0), v: parseFloat(item.burzaco_ventas ?? 0) },
+      { s: parseFloat(item.a_korn_stock  ?? 0), v: parseFloat(item.a_korn_ventas  ?? 0) },
+      { s: parseFloat(item.tucuman_stock ?? 0), v: parseFloat(item.tucuman_ventas ?? 0) },
+    ];
+    const esCritico = sucursales.some(({ s, v }) => v > 0 && (s / v) * 30 < DIAS_CRITICO);
+    if (esCritico) criticos++;
+  });
+  const btnPre = document.getElementById("btnPrecompra");
+  if (btnPre) {
+    let badge = btnPre.querySelector(".badge-critico");
+    if (criticos > 0) {
+      if (!badge) {
+        badge = document.createElement("span");
+        badge.className = "badge-critico";
+        btnPre.appendChild(badge);
+      }
+      badge.textContent = criticos;
+      btnPre.title = `${criticos} productos con menos de ${DIAS_CRITICO} días de stock`;
+    } else if (badge) {
+      badge.remove();
+    }
+  }
+
   // Filas
   data.forEach((row, rowIndex) => {
     const tr = document.createElement("tr");

@@ -17,13 +17,9 @@
     <div class="header-inner">
       <div class="header-brand">
         <a href="index.html" class="back-link" title="Volver al inicio">←</a>
-        <span class="brand-icon">▦</span>
-        <div>
-          <h1 class="brand-title">Mayorista Emanuel</h1>
-          <p class="brand-sub">Pre-compra</p>
-        </div>
+        <img src="img/logo_ema.jpeg" alt="Mayorista Emanuel" class="brand-logo" />
+        <p class="brand-sub">Pre-compra</p>
       </div>
-
       <div class="header-controls">
         <button class="theme-toggle" id="themeToggle" title="Cambiar tema">
           <span class="theme-icon-dark">🌙</span>
@@ -37,7 +33,6 @@
   <!-- ====== MAIN ====== -->
   <main class="main-content">
 
-    <!-- Barra de búsqueda + acciones -->
     <div class="search-bar">
       <div class="search-input-wrap">
         <span class="search-icon">⌕</span>
@@ -45,7 +40,6 @@
           placeholder="Buscar producto y presionar ENTER…"
           autocomplete="off"/>
       </div>
-
       <div class="action-buttons">
         <button id="btnPedidosGuardados" class="btn btn-secondary">📂 Pedidos</button>
         <button id="btnNuevoPedido"      class="btn btn-secondary">➕ Nuevo</button>
@@ -56,7 +50,6 @@
       </div>
     </div>
 
-    <!-- Panel de totales + semáforo -->
     <div class="totales-panel">
       <div class="totales-card">
         <span class="totales-label">Total pedido</span>
@@ -66,8 +59,6 @@
         <span class="totales-label">Rentabilidad</span>
         <span class="totales-value" id="rentabilidadPedido">0 %</span>
       </div>
-
-      <!-- Semáforo -->
       <div class="semaforo-wrap">
         <div class="semaforo-vertical" id="semaforoVertical">
           <div class="luz luz-roja"></div>
@@ -77,7 +68,6 @@
       </div>
     </div>
 
-    <!-- Tabla precompra -->
     <div class="table-container">
       <table>
         <thead>
@@ -143,7 +133,6 @@
     </div>
   </div>
 
-  <!-- SheetJS para exportar Excel -->
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <script src="precompra.js" defer></script>
 
@@ -159,7 +148,6 @@
       localStorage.setItem("theme", next);
     });
 
-    // cerrar pedidos footer
     document.getElementById("cerrarPedidosFooter")?.addEventListener("click", () => {
       document.getElementById("modalPedidos").style.display = "none";
     });

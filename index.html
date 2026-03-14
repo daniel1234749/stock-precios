@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="precios.css" />
   <link rel="stylesheet" href="tabla.css" />
   <link rel="stylesheet" href="stats.css" />
+  <link rel="stylesheet" href="inflacion.css" />
 </head>
 
 <body>
@@ -35,7 +36,6 @@
   <!-- ====== MAIN ====== -->
   <main class="main-content">
 
-    <!-- Barra de búsqueda -->
     <div class="search-bar">
       <div class="search-input-wrap">
         <span class="search-icon">⌕</span>
@@ -43,6 +43,9 @@
         <button class="search-clear" id="btnLimpiar" title="Limpiar búsqueda">✕</button>
       </div>
       <div class="action-buttons">
+        <button id="btnInflacion" class="btn btn-ghost">
+          <span>📈</span> Inflación
+        </button>
         <button id="btnMostrar" class="btn btn-secondary">
           <span>🛒</span> Ver seleccionados
         </button>
@@ -52,7 +55,6 @@
       </div>
     </div>
 
-    <!-- Tabla con scroll horizontal Y vertical -->
     <div class="table-container">
       <div class="table-container-inner">
         <table id="tablaPrincipal">
@@ -122,13 +124,81 @@
         <p class="stats-tabla-title">Detalle por mes</p>
         <table class="stats-tabla">
           <thead>
-            <tr>
-              <th>Mes</th>
-              <th>Ventas (uds)</th>
-            </tr>
+            <tr><th>Mes</th><th>Ventas (uds)</th></tr>
           </thead>
           <tbody id="statsTablaBody"></tbody>
         </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== MODAL INFLACIÓN ====== -->
+  <div id="modalInflacion">
+    <div class="inf-content">
+
+      <div class="inf-header">
+        <h2>📈 Inflación Argentina</h2>
+        <button class="modal-close" id="btnCerrarInflacion">✕</button>
+      </div>
+
+      <div class="inf-tabs">
+        <button class="tab-inf active" data-panel="tabla">📋 Histórico</button>
+        <button class="tab-inf" data-panel="calc">🧮 Calculadora</button>
+        <button class="tab-inf" data-panel="sim">💡 Simulador</button>
+      </div>
+
+      <div class="inf-body">
+
+        <!-- Panel 1: Tabla histórica -->
+        <div class="inf-panel active" id="panel-tabla">
+          <div class="inf-chart-wrap">
+            <canvas id="chartInflacion"></canvas>
+          </div>
+          <table class="inf-tabla">
+            <thead>
+              <tr>
+                <th>Mes</th>
+                <th>IPC mensual</th>
+                <th>Acumulado desde Ene-24</th>
+              </tr>
+            </thead>
+            <tbody id="infTablaBody"></tbody>
+          </table>
+        </div>
+
+        <!-- Panel 2: Calculadora acumulada -->
+        <div class="inf-panel" id="panel-calc">
+          <div class="calc-form">
+            <div class="calc-row-2">
+              <label>Desde
+                <select id="calcDesde"></select>
+              </label>
+              <label>Hasta
+                <select id="calcHasta"></select>
+              </label>
+            </div>
+            <button class="btn-calc" id="btnCalcular">Calcular inflación acumulada</button>
+          </div>
+          <div id="calcResultado"></div>
+        </div>
+
+        <!-- Panel 3: Simulador de precio -->
+        <div class="inf-panel" id="panel-sim">
+          <div class="calc-form">
+            <label>Precio actual ($)
+              <input type="number" id="simPrecio" placeholder="Ej: 1500" min="0" />
+            </label>
+            <label>Proyectar a cuántos meses
+              <input type="number" id="simMeses" placeholder="Ej: 3" value="3" min="1" max="24" />
+            </label>
+            <label>Basado en inflación desde
+              <select id="simDesde"></select>
+            </label>
+            <button class="btn-calc" id="btnSimular">Simular precio futuro</button>
+          </div>
+          <div id="simResultado"></div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -139,6 +209,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="precios.js"></script>
   <script src="stats.js"></script>
+  <script src="inflacion.js"></script>
 
   <script>
     // ── Theme toggle ──

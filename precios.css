@@ -589,12 +589,13 @@ tr.fila-totales td {
 }
 
 /* ── Logo header ── */
+/* ── Logo header ── */
 .brand-logo {
   height: 62px;
+  max-height: 62px;
   width: auto;
   object-fit: contain;
 }
-
 .brand-sub {
   font-family: var(--font-data);
   font-size: 0.7rem;

@@ -142,6 +142,13 @@ body.precompra {
   text-transform: uppercase;
 }
 
+.brand-logo {
+  height: 62px;
+  max-height: 62px;
+  width: auto;
+  object-fit: contain;
+}
+
 .header-controls { display: flex; align-items: center; gap: 16px; }
 
 /* Theme toggle */
@@ -672,6 +679,23 @@ body.precompra {
 }
 .codigo-click:hover { text-decoration: underline; }
 
+
+/* ── Fix alineación tabla precompra ── */
+.table-container thead th {
+  text-align: center !important;
+}
+.table-container thead th:nth-child(1),
+.table-container thead th:nth-child(2) {
+  text-align: left !important;
+}
+.table-container td {
+  text-align: center !important;
+}
+.table-container td:nth-child(1),
+.table-container td:nth-child(2) {
+  text-align: left !important;
+}
+
 /* ============================================================
    RESPONSIVE
    ============================================================ */
@@ -687,11 +711,6 @@ body.precompra {
   .semaforo-vertical { flex-direction: row; width: auto; padding: 8px 14px; }
 }
 
-
-
-
-
-
 /* ── Fix alineación tabla precompra ── */
 .table-container thead th {
   text-align: center !important;
@@ -706,4 +725,33 @@ body.precompra {
 .table-container tbody td:nth-child(1),
 .table-container tbody td:nth-child(2) {
   text-align: left !important;
+}
+
+/* ── Días de stock ── */
+.dias-critico { color: #ff1744; font-weight: 700; }
+.dias-alerta  { color: #ffd600; font-weight: 600; }
+.dias-ok      { color: #00e676; font-weight: 600; }
+
+/* ── Badge alerta productos críticos ── */
+.badge-critico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ff1744;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  font-family: var(--font-data);
+  border-radius: 99px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  margin-left: 6px;
+  vertical-align: middle;
+  animation: pulse-badge 1.5s infinite;
+}
+
+@keyframes pulse-badge {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
 }

@@ -401,15 +401,26 @@ function mostrarDetalleStock(p) {
   const uxb  = num(p.uxb) || 1;
   const fmt  = v => `${v} btos x ${uxb}u`;
 
-  // Semáforo: rojo si stock <= 0, amarillo si stock <= ventas, verde si ok
+  // Semáforo stock: rojo si stock <= 0, amarillo si stock <= ventas, verde si ok
   const clase = (s, v) =>
     s <= 0     ? "stock-bajo"  :
     s <= v     ? "stock-medio" : "stock-alto";
+
+  // Días de stock restantes
+  const dias = (stock, ventas30) => {
+    if (stock <= 0) return { txt: "Sin stock", cls: "dias-critico" };
+    if (ventas30 <= 0) return { txt: "Sin ventas", cls: "dias-ok" };
+    const d = Math.round((stock / ventas30) * 30);
+    const cls = d < 15 ? "dias-critico" : d < 30 ? "dias-alerta" : "dias-ok";
+    return { txt: d + " días", cls };
+  };
 
   const fs = num(p.fair_stock),    fv = num(p.fair_ventas);
   const bs = num(p.burzaco_stock), bv = num(p.burzaco_ventas);
   const as = num(p.a_korn_stock),  av = num(p.a_korn_ventas);
   const ts = num(p.tucuman_stock), tv = num(p.tucuman_ventas);
+
+  const df = dias(fs, fv), db = dias(bs, bv), da = dias(as, av), dt = dias(ts, tv);
 
   contenedor.innerHTML = `
     <div class="card-detalle">
@@ -422,7 +433,8 @@ function mostrarDetalleStock(p) {
           <tr>
             <th style="text-align:center">Sucursal</th>
             <th style="text-align:center">Stock</th>
-            <th style="text-align:center">Ventas</th>
+            <th style="text-align:center">Ventas <span style="font-size:0.7rem;color:#aaa;font-weight:400">(últ. 30 días)</span></th>
+            <th style="text-align:center">Días stock</th>
           </tr>
         </thead>
         <tbody>
@@ -430,21 +442,31 @@ function mostrarDetalleStock(p) {
             <td style="text-align:center">Fair</td>
             <td style="text-align:center" class="${clase(fs,fv)}">${fmt(fs)}</td>
             <td style="text-align:center">${fmt(fv)}</td>
+            <td style="text-align:center" class="${df.cls}">${df.txt}</td>
           </tr>
           <tr>
             <td style="text-align:center">Burzaco</td>
             <td style="text-align:center" class="${clase(bs,bv)}">${fmt(bs)}</td>
             <td style="text-align:center">${fmt(bv)}</td>
+            <td style="text-align:center" class="${db.cls}">${db.txt}</td>
           </tr>
           <tr>
             <td style="text-align:center">A. Korn</td>
             <td style="text-align:center" class="${clase(as,av)}">${fmt(as)}</td>
             <td style="text-align:center">${fmt(av)}</td>
+            <td style="text-align:center" class="${da.cls}">${da.txt}</td>
           </tr>
           <tr>
             <td style="text-align:center">Tucumán</td>
             <td style="text-align:center" class="${clase(ts,tv)}">${fmt(ts)}</td>
             <td style="text-align:center">${fmt(tv)}</td>
+            <td style="text-align:center" class="${dt.cls}">${dt.txt}</td>
+          </tr>
+          <tr style="border-top:2px solid #00e67655; font-weight:700">
+            <td style="text-align:center;color:#ffd600">Total</td>
+            <td style="text-align:center;color:#ffd600">${fmt((fs+bs+as+ts).toFixed(2))}</td>
+            <td style="text-align:center;color:#ffd600">${fmt((fv+bv+av+tv).toFixed(2))}</td>
+            <td></td>
           </tr>
         </tbody>
       </table>
