@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="tabla.css" />
   <link rel="stylesheet" href="stats.css" />
   <link rel="stylesheet" href="inflacion.css" />
+  <link rel="stylesheet" href="dolar.css" />
 </head>
 
 <body>
@@ -32,6 +33,14 @@
       </div>
     </div>
   </header>
+
+  <!-- ====== TIRA DÓLAR ====== -->
+  <div class="dolar-tira">
+    <span style="color:var(--text-muted);font-family:var(--font-data);font-size:0.72rem;margin-right:4px">💵</span>
+    <div id="dolarTira" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <span style="color:var(--text-muted);font-family:var(--font-data);font-size:0.72rem">Cargando cotización...</span>
+    </div>
+  </div>
 
   <!-- ====== MAIN ====== -->
   <main class="main-content">
@@ -210,6 +219,7 @@
   <script src="precios.js"></script>
   <script src="stats.js"></script>
   <script src="inflacion.js"></script>
+  <script src="dolar.js"></script>
 
   <script>
     // ── Theme toggle ──
