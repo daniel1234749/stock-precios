@@ -29,14 +29,14 @@ function actualizarTira(oficial, blue) {
 
   tira.innerHTML = `
     <span class="dolar-item">
-      <span class="dolar-label">Oficial</span>
+      <span class="dolar-label dolar-label-oficial">Oficial</span>
       <span class="dolar-compra">${fmt(oficial?.compra)}</span>
       <span class="dolar-sep">/</span>
       <span class="dolar-venta">${fmt(oficial?.venta)}</span>
     </span>
     <span class="dolar-divider">|</span>
     <span class="dolar-item">
-      <span class="dolar-label">Blue</span>
+      <span class="dolar-label dolar-label-blue">Blue</span>
       <span class="dolar-compra">${fmt(blue?.compra)}</span>
       <span class="dolar-sep">/</span>
       <span class="dolar-venta">${fmt(blue?.venta)}</span>

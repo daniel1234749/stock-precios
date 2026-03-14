@@ -20,11 +20,14 @@
 }
 
 .dolar-label {
-  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-right: 2px;
+  font-weight: 700;
 }
+
+.dolar-label-oficial { color: #38bdf8; }
+.dolar-label-blue    { color: #a78bfa; }
 
 .dolar-compra { color: #00e676; font-weight: 700; }
 .dolar-venta  { color: #ff6b6b; font-weight: 700; }
