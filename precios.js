@@ -663,3 +663,414 @@ function mostrarToastActualizacion() {
 
   document.body.appendChild(toast);
 }
+
+// ============================================================
+//  EXPORTAR EXCEL CON FORMATO — ExcelJS
+// ============================================================
+async function exportarExcelFormato() {
+  if (!seleccionados.length) return alert("No hay productos para exportar.");
+
+  // Cargar ExcelJS dinámicamente
+  if (!window.ExcelJS) {
+    await new Promise((res, rej) => {
+      const s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js";
+      s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    });
+  }
+
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet("Productos seleccionados");
+
+  // ── Columnas ──────────────────────────────────────────────
+  const ORDEN = [
+    "codigoProveedor", "codigos", "productos", "uxb",
+    "vtafair", "vtaburza", "vtakorn", "vtatucu", "totalVentas",
+    "fair", "burza", "korn", "tucu", "cdistrib", "stockTotal",
+    "precios", "precioProveedor", "Margen %"
+  ];
+
+  const LABELS = {
+    codigoProveedor: "Cod.Prov",
+    codigos:         "Cod",
+    productos:       "Producto",
+    uxb:             "UXB",
+    vtafair:         "Vta.Fair",
+    vtaburza:        "Vta.Burza",
+    vtakorn:         "Vta.Korn",
+    vtatucu:         "Vta.Tucu",
+    totalVentas:     "Tot.Vtas",
+    fair:            "Fair",
+    burza:           "Burza",
+    korn:            "Korn",
+    tucu:            "Tucu",
+    cdistrib:        "Cdistrib",
+    stockTotal:      "St.Total",
+    precios:         "Precio",
+    precioProveedor: "Precio.Prov",
+    "Margen %":      "Margen %"
+  };
+
+  // Columnas ventas y stock para colorear
+  const COL_VENTAS  = ["vtafair","vtaburza","vtakorn","vtatucu","totalVentas"];
+  const COL_STOCK   = ["fair","burza","korn","tucu","cdistrib","stockTotal"];
+  const COL_PRECIO  = ["precios","precioProveedor"];
+
+  // Resolver keys reales
+  const resolveKey = alias => {
+    if (alias === "codigoProveedor" || alias === "precioProveedor" ||
+        alias === "totalVentas" || alias === "stockTotal" || alias === "Margen %") return alias;
+    return resolveKeyForAlias(alias, seleccionados) || resolveKeyForAlias(alias, datosOriginales) || alias;
+  };
+
+  const cols = ORDEN.map(a => ({ alias: a, key: resolveKey(a) }));
+
+  // ── Anchos de columna ─────────────────────────────────────
+  ws.columns = cols.map(({ alias }) => ({
+    width: alias === "productos" ? 40 : alias === "Margen %" ? 12 : 11
+  }));
+
+  // ── Encabezado ────────────────────────────────────────────
+  const headerRow = ws.addRow(cols.map(({ alias }) => LABELS[alias] || alias));
+  headerRow.height = 20;
+  headerRow.eachCell(cell => {
+    cell.fill   = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0D0D0D" } };
+    cell.font   = { bold: true, color: { argb: "FF00E676" }, name: "Courier New", size: 9 };
+    cell.border = { bottom: { style: "medium", color: { argb: "FF00E676" } } };
+    cell.alignment = { vertical: "middle", horizontal: "center" };
+  });
+  // Producto alineado a la izquierda
+  headerRow.getCell(3).alignment = { horizontal: "left" };
+
+  // ── Acumuladores para totales ─────────────────────────────
+  const totales = {};
+  cols.forEach(({ alias }) => { totales[alias] = 0; });
+
+  // ── Filas de datos ────────────────────────────────────────
+  seleccionados.forEach((p, idx) => {
+    const rowData = cols.map(({ alias, key }) => {
+      if (alias === "Margen %") {
+        const pv = parseFloat(String(getFirstField(p, ["precios","precio","precio_vta"]) || 0).replace(",",".")) || 0;
+        const pp = parseFloat(String(p.precioProveedor || 0).replace(",",".")) || 0;
+        return (pv > 0 && pp > 0) ? parseFloat(((pv - pp) / pp * 100).toFixed(2)) : "";
+      }
+      const v = p[key] ?? "";
+      const n = parseFloat(String(v).replace(",","."));
+      return isNaN(n) ? v : n;
+    });
+
+    const row = ws.addRow(rowData);
+    row.height = 16;
+
+    // Fondo alternado muy sutil
+    const bgBase = idx % 2 === 0 ? "FF161616" : "FF1A1A1A";
+
+    cols.forEach(({ alias, key }, ci) => {
+      const cell = row.getCell(ci + 1);
+      const val  = rowData[ci];
+
+      cell.fill      = { type: "pattern", pattern: "solid", fgColor: { argb: bgBase } };
+      cell.font      = { name: "Courier New", size: 9, color: { argb: "FFF0F0F0" } };
+      cell.alignment = { vertical: "middle", horizontal: ci <= 2 ? "left" : "center" };
+      cell.border    = { bottom: { style: "thin", color: { argb: "FF2A2A2A" } } };
+
+      // Colores ventas
+      if (COL_VENTAS.includes(alias) && typeof val === "number") {
+        cell.font = { ...cell.font, color: { argb: val === 0 ? "FFFF1744" : "FF00E676" }, bold: val === 0 };
+        totales[alias] = (totales[alias] || 0) + val;
+      }
+      // Colores stock
+      else if (COL_STOCK.includes(alias) && typeof val === "number") {
+        if (val < 0) {
+          cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFF1744" } };
+          cell.font = { ...cell.font, color: { argb: "FFFFFFFF" }, bold: true };
+        } else {
+          cell.font = { ...cell.font, color: { argb: "FF00E676" } };
+        }
+        totales[alias] = (totales[alias] || 0) + val;
+      }
+      // Precio formateado
+      else if (COL_PRECIO.includes(alias) && typeof val === "number") {
+        cell.numFmt = '"$"#,##0.00';
+        cell.font   = { ...cell.font, color: { argb: "FF38BDF8" } };
+        if (alias === "precios") totales[alias] = (totales[alias] || 0) + val;
+      }
+      // Margen %
+      else if (alias === "Margen %" && typeof val === "number") {
+        cell.numFmt = '0.00"%"';
+        cell.font   = { ...cell.font, color: { argb: val < 15 ? "FFFF1744" : val < 25 ? "FFFFD600" : "FF00E676" } };
+      }
+    });
+  });
+
+  // ── Fila de totales ───────────────────────────────────────
+  const totRow = ws.addRow(cols.map(({ alias }, i) => {
+    if (i === 0) return "TOTALES";
+    if (i === 1 || i === 2 || i === 3) return "";
+    return totales[alias] ? parseFloat(totales[alias].toFixed(2)) : "";
+  }));
+  totRow.height = 18;
+  totRow.eachCell((cell, ci) => {
+    cell.fill      = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1A1A00" } };
+    cell.font      = { bold: true, name: "Courier New", size: 9, color: { argb: "FFFFD600" } };
+    cell.border    = { top: { style: "medium", color: { argb: "FFFFD600" } } };
+    cell.alignment = { vertical: "middle", horizontal: ci <= 3 ? "left" : "center" };
+    // Precio con formato
+    const alias = cols[ci - 1]?.alias;
+    if (COL_PRECIO.includes(alias)) cell.numFmt = '"$"#,##0.00';
+  });
+
+  // ── Descargar ─────────────────────────────────────────────
+  const fecha = new Date().toLocaleDateString("es-AR").replace(/\//g,"-");
+  const buf   = await wb.xlsx.writeBuffer();
+  const blob  = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  const url   = URL.createObjectURL(blob);
+  const a     = document.createElement("a");
+  a.href      = url;
+  a.download  = `seleccion_formato_${fecha}.xlsx`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Listener del botón
+document.addEventListener("DOMContentLoaded", () => {
+  const btnFmt = document.getElementById("btnExportarFmt");
+  if (btnFmt) btnFmt.addEventListener("click", exportarExcelFormato);
+});
+
+// ============================================================
+//  INFORME HTML — Para compartir por email/WhatsApp
+// ============================================================
+async function generarInformeHTML() {
+  if (!seleccionados.length) return alert("No hay productos para exportar.");
+
+  const fecha     = new Date().toLocaleString("es-AR", { dateStyle:"full", timeStyle:"short" });
+  const fechaFN   = new Date().toLocaleDateString("es-AR").replace(/\//g,"-");
+  const total     = seleccionados.length;
+
+  // ── Columnas a mostrar ──────────────────────────────────
+  const COLS = [
+    { alias: "codigos",        label: "Cód",        tipo: "id"     },
+    { alias: "productos",      label: "Producto",   tipo: "texto"  },
+    { alias: "uxb",            label: "UXB",        tipo: "num"    },
+    { alias: "vtafair",        label: "Vta.Fair",   tipo: "venta"  },
+    { alias: "vtaburza",       label: "Vta.Burza",  tipo: "venta"  },
+    { alias: "vtakorn",        label: "Vta.Korn",   tipo: "venta"  },
+    { alias: "vtatucu",        label: "Vta.Tucu",   tipo: "venta"  },
+    { alias: "totalVentas",    label: "Tot.Vtas",   tipo: "venta-total" },
+    { alias: "fair",           label: "Fair",       tipo: "stock"  },
+    { alias: "burza",          label: "Burza",      tipo: "stock"  },
+    { alias: "korn",           label: "Korn",       tipo: "stock"  },
+    { alias: "tucu",           label: "Tucu",       tipo: "stock"  },
+    { alias: "cdistrib",       label: "Cdistrib",   tipo: "stock"  },
+    { alias: "stockTotal",     label: "St.Total",   tipo: "stock-total" },
+    { alias: "precios",        label: "Precio",     tipo: "precio" },
+    { alias: "precioProveedor",label: "P.Prov",     tipo: "precio" },
+    { alias: "Margen %",       label: "Margen %",   tipo: "margen" },
+  ];
+
+  const resolveK = alias => {
+    if (["totalVentas","stockTotal","codigoProveedor","precioProveedor"].includes(alias)) return alias;
+    return resolveKeyForAlias(alias, seleccionados) || resolveKeyForAlias(alias, datosOriginales) || alias;
+  };
+
+  const cols = COLS.map(c => ({ ...c, key: resolveK(c.alias) }));
+
+  // ── Calcular totales ────────────────────────────────────
+  const totales = {};
+  cols.forEach(c => { totales[c.alias] = 0; });
+  seleccionados.forEach(p => {
+    cols.forEach(c => {
+      if (["venta","venta-total","stock","stock-total"].includes(c.tipo)) {
+        const v = parseFloat(String(p[c.key] ?? 0).replace(",",".")) || 0;
+        totales[c.alias] = (totales[c.alias] || 0) + v;
+      }
+    });
+  });
+
+  // ── Helpers ─────────────────────────────────────────────
+  const fmtN = v => {
+    const n = parseFloat(String(v ?? 0).replace(",","."));
+    if (isNaN(n)) return v ?? "";
+    return n.toLocaleString("es-AR", { minimumFractionDigits:1, maximumFractionDigits:1 });
+  };
+  const fmtP = v => {
+    const n = parseFloat(String(v ?? 0).replace(",","."));
+    return isNaN(n) ? v : n.toLocaleString("es-AR", { style:"currency", currency:"ARS" });
+  };
+
+  const cellColor = (v, tipo) => {
+    const n = parseFloat(String(v ?? 0).replace(",","."));
+    if (tipo === "venta") return n === 0 ? "color:#dc2626;font-weight:700" : "color:#16a34a;font-weight:600";
+    if (tipo === "venta-total") {
+      const base = n === 0 ? "color:#dc2626;font-weight:800" : "color:#1d4ed8;font-weight:800";
+      return base + ";background:#eff6ff;border-left:2px solid #3b82f6;border-right:2px solid #3b82f6";
+    }
+    if (tipo === "stock") {
+      if (n < 0)  return "color:#fff;background:#dc2626;font-weight:700";
+      if (n === 0) return "color:#dc2626";
+      return "color:#16a34a;font-weight:600";
+    }
+    if (tipo === "stock-total") {
+      if (n < 0)  return "color:#fff;background:#dc2626;font-weight:800;border-left:2px solid #16a34a;border-right:2px solid #16a34a";
+      return "color:#15803d;font-weight:800;background:#f0fdf4;border-left:2px solid #16a34a;border-right:2px solid #16a34a";
+    }
+    if (tipo === "margen") {
+      if (n < 15) return "color:#dc2626;font-weight:700";
+      if (n < 25) return "color:#d97706;font-weight:700";
+      return "color:#16a34a;font-weight:700";
+    }
+    return "";
+  };
+
+  // ── Filas ───────────────────────────────────────────────
+  const filas = seleccionados.map((p, idx) => {
+    const bg = idx % 2 === 0 ? "#ffffff" : "#f8fafc";
+    const tds = cols.map(c => {
+      const v = p[c.key] ?? "";
+      let txt = "", style = `padding:8px 10px;font-size:13px;text-align:center;border-bottom:1px solid #e2e8f0;`;
+      if (c.tipo === "texto") {
+        txt = v;
+        style += "text-align:left;font-weight:600;color:#0f172a;min-width:180px;";
+      } else if (c.tipo === "id") {
+        txt = v;
+        style += "font-family:monospace;color:#0369a1;font-weight:700;text-align:left;";
+      } else if (c.tipo === "precio") {
+        txt = fmtP(v);
+        style += "color:#7c3aed;font-weight:700;";
+      } else if (c.tipo === "margen") {
+        const pv = parseFloat(String(getFirstField(p, ["precios","precio","precio_vta"]) || 0).replace(",",".")) || 0;
+        const pp = parseFloat(String(p.precioProveedor || 0).replace(",",".")) || 0;
+        const mg = (pv > 0 && pp > 0) ? ((pv - pp) / pp * 100) : null;
+        txt = mg !== null ? mg.toFixed(1) + "%" : "—";
+        style += cellColor(mg ?? 0, "margen");
+      } else {
+        txt = fmtN(v);
+        style += cellColor(v, c.tipo);
+      }
+      return `<td style="${style}">${txt}</td>`;
+    }).join("");
+    return `<tr style="background:${bg}">${tds}</tr>`;
+  }).join("");
+
+  // ── Fila totales ────────────────────────────────────────
+  const tdsTotales = cols.map((c, i) => {
+    let txt = "", style = "padding:9px 10px;font-size:13px;font-weight:800;text-align:center;background:#0f172a;color:#fbbf24;border-top:2px solid #fbbf24;";
+    if (i === 0) { txt = "TOTALES"; style += "text-align:left;"; }
+    else if (c.tipo === "texto" || c.tipo === "num") { txt = ""; }
+    else if (c.tipo === "venta") {
+      txt = fmtN(totales[c.alias]);
+    } else if (c.tipo === "venta-total") {
+      txt = fmtN(totales[c.alias]);
+      style += "background:#1e3a5f;color:#60a5fa;border-left:2px solid #3b82f6;border-right:2px solid #3b82f6;font-size:15px;";
+    } else if (c.tipo === "stock") {
+      txt = fmtN(totales[c.alias]);
+    } else if (c.tipo === "stock-total") {
+      txt = fmtN(totales[c.alias]);
+      style += "background:#14532d;color:#4ade80;border-left:2px solid #16a34a;border-right:2px solid #16a34a;font-size:15px;";
+    } else if (c.tipo === "precio" || c.tipo === "margen") {
+      txt = "";
+    }
+    return `<td style="${style}">${txt}</td>`;
+  }).join("");
+
+  // ── Encabezado grupos ───────────────────────────────────
+  const thVentas = cols.filter(c => ["venta","venta-total"].includes(c.tipo)).length;
+  const thStock  = cols.filter(c => ["stock","stock-total"].includes(c.tipo)).length;
+  const thOtros  = cols.filter(c => !["venta","venta-total","stock","stock-total","precio","margen"].includes(c.tipo)).length;
+  const thPrecio = cols.filter(c => c.tipo === "precio").length;
+  const thMargen = cols.filter(c => c.tipo === "margen").length;
+
+  const grupoRow = `<tr>
+    <th colspan="${thOtros}" style="padding:6px;background:#1e293b;border:none"></th>
+    <th colspan="${thVentas}" style="padding:6px;background:#1e293b;color:#60a5fa;font-size:11px;letter-spacing:.08em;text-align:center;border-bottom:2px solid #3b82f6">VENTAS (últ. 30 días)</th>
+    <th colspan="${thStock}"  style="padding:6px;background:#1e293b;color:#4ade80;font-size:11px;letter-spacing:.08em;text-align:center;border-bottom:2px solid #16a34a">STOCK</th>
+    <th colspan="${thPrecio}" style="padding:6px;background:#1e293b;color:#c084fc;font-size:11px;letter-spacing:.08em;text-align:center;border-bottom:2px solid #a855f7">PRECIOS</th>
+    <th colspan="${thMargen}" style="padding:6px;background:#1e293b;color:#fbbf24;font-size:11px;letter-spacing:.08em;text-align:center;border-bottom:2px solid #f59e0b">MARGEN</th>
+  </tr>`;
+
+  const subRow = cols.map(c => {
+    const bg = ["venta","venta-total"].includes(c.tipo) ? "#eff6ff"
+             : ["stock","stock-total"].includes(c.tipo) ? "#f0fdf4"
+             : c.tipo === "precio" ? "#faf5ff"
+             : c.tipo === "margen" ? "#fffbeb"
+             : "#f8fafc";
+    const color = ["venta","venta-total"].includes(c.tipo) ? "#1d4ed8"
+                : ["stock","stock-total"].includes(c.tipo) ? "#15803d"
+                : c.tipo === "precio" ? "#7c3aed"
+                : c.tipo === "margen" ? "#b45309"
+                : "#475569";
+    return `<th style="padding:8px 10px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:${color};background:${bg};text-align:center;white-space:nowrap;border-bottom:2px solid #e2e8f0">${c.label}</th>`;
+  }).join("");
+
+  // ── HTML completo ───────────────────────────────────────
+  const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Informe Stock &amp; Ventas — ${fechaFN}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#f1f5f9;color:#1e293b;padding:16px}
+  .wrap{max-width:100%;margin:0 auto}
+  .header{background:#0f172a;color:#fff;border-radius:12px;padding:20px 24px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+  .header h1{font-size:20px;font-weight:800;letter-spacing:-.02em}
+  .header h1 span{color:#22d07a}
+  .header p{font-size:11px;color:#94a3b8;margin-top:4px}
+  .badge{background:#1e293b;color:#22d07a;border:1px solid #22d07a44;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700}
+  .fecha{color:#64748b;font-size:10px;margin-top:4px;text-align:right}
+  .table-wrap{overflow-x:auto;border-radius:10px;box-shadow:0 2px 16px rgba(0,0,0,.08)}
+  table{border-collapse:collapse;width:100%;background:#fff;min-width:700px}
+  .footer{text-align:center;color:#94a3b8;font-size:11px;margin-top:16px}
+  @media(max-width:600px){
+    .header{padding:14px 16px}
+    .header h1{font-size:16px}
+    body{padding:8px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div>
+      <h1>STOCK <span>&amp;</span> VENTAS</h1>
+      <p>Mayorista Emanuel — Informe de productos seleccionados</p>
+    </div>
+    <div style="text-align:right">
+      <div class="badge">${total} producto${total !== 1 ? "s" : ""}</div>
+      <div class="fecha">${fecha}</div>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        ${grupoRow}
+        <tr>${subRow}</tr>
+      </thead>
+      <tbody>
+        ${filas}
+        <tr>${tdsTotales}</tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="footer">Informe generado automáticamente — Mayorista Emanuel — ${fecha}</div>
+</div>
+</body>
+</html>`;
+
+  // ── Descargar ───────────────────────────────────────────
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
+  a.download = `informe_${fechaFN}.html`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const btnInf = document.getElementById("btnInforme");
+  if (btnInf) btnInf.addEventListener("click", generarInformeHTML);
+});
