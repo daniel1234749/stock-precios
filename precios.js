@@ -1033,6 +1033,9 @@ async function generarInformeHTML() {
 </head>
 <body>
 <div class="wrap">
+  <div class="btn-print-bar">
+   
+  </div>
   <div class="header">
     <div>
       <h1>STOCK <span>&amp;</span> VENTAS</h1>
