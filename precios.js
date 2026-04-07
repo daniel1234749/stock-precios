@@ -851,6 +851,7 @@ async function generarInformeHTML() {
 
   // ── Columnas a mostrar ──────────────────────────────────
   const COLS = [
+    { alias: "codigoProveedor",label: "Cod.Prov",   tipo: "id"     },
     { alias: "codigos",        label: "Cód",        tipo: "id"     },
     { alias: "productos",      label: "Producto",   tipo: "texto"  },
     { alias: "uxb",            label: "UXB",        tipo: "num"    },
@@ -902,7 +903,7 @@ async function generarInformeHTML() {
 
   const cellColor = (v, tipo) => {
     const n = parseFloat(String(v ?? 0).replace(",","."));
-    if (tipo === "venta") return n === 0 ? "color:#dc2626;font-weight:700" : "color:#16a34a;font-weight:600";
+    if (tipo === "venta") return n === 0 ? "color:#dc2626;font-weight:700" : "color:#0f172a;font-weight:700";
     if (tipo === "venta-total") {
       const base = n === 0 ? "color:#dc2626;font-weight:800" : "color:#1d4ed8;font-weight:800";
       return base + ";background:#eff6ff;border-left:2px solid #3b82f6;border-right:2px solid #3b82f6";
@@ -910,7 +911,7 @@ async function generarInformeHTML() {
     if (tipo === "stock") {
       if (n < 0)  return "color:#fff;background:#dc2626;font-weight:700";
       if (n === 0) return "color:#dc2626";
-      return "color:#16a34a;font-weight:600";
+      return "color:#0f172a;font-weight:700";
     }
     if (tipo === "stock-total") {
       if (n < 0)  return "color:#fff;background:#dc2626;font-weight:800;border-left:2px solid #16a34a;border-right:2px solid #16a34a";
@@ -919,7 +920,7 @@ async function generarInformeHTML() {
     if (tipo === "margen") {
       if (n < 15) return "color:#dc2626;font-weight:700";
       if (n < 25) return "color:#d97706;font-weight:700";
-      return "color:#16a34a;font-weight:700";
+      return "color:#0f172a;font-weight:700";
     }
     return "";
   };
