@@ -219,7 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const precioNuestro = producto.precio_vta;
       const costoTotal = costoProveedor * uxb * cantidad;
       const ventaTotal = precioNuestro * uxb * cantidad;
-      const margen = ((ventaTotal - costoTotal) / ventaTotal) * 100;
+      const margen = costoTotal > 0 ? ((ventaTotal - costoTotal) / costoTotal) * 100 : 0;
 
       precompra.push({
         codigos: producto.codigos,
@@ -271,7 +271,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     totalPedidoEl.textContent = `Total pedido: ${formatoPesos(totalCosto)}`;
-    const rent = totalVenta > 0 ? ((totalVenta - totalCosto) / totalVenta) * 100 : 0;
+    const rent = totalCosto > 0 ? ((totalVenta - totalCosto) / totalCosto) * 100 : 0;
     rentabilidadEl.textContent = `Rentabilidad total: ${rent.toFixed(2)} %`;
     actualizarSemaforo(rent);
   }
@@ -303,7 +303,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const exportData = precompra.map(p => {
       const ventaTotal  = p.precioNuestro * p.uxb * p.cantidad;
       const costoTotal  = p.costoTotal;
-      const margen      = ventaTotal > 0 ? ((ventaTotal - costoTotal) / ventaTotal * 100).toFixed(2) + " %" : "";
+      const margen      = costoTotal > 0 ? ((ventaTotal - costoTotal) / costoTotal * 100).toFixed(2) + " %" : "";
       return {
         "Código":          p.codigos,
         "Producto":        p.productos,
@@ -319,7 +319,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Fila de totales
     const totalCosto = precompra.reduce((a, p) => a + p.costoTotal, 0);
     const totalVenta = precompra.reduce((a, p) => a + p.precioNuestro * p.uxb * p.cantidad, 0);
-    const rentTotal  = totalVenta > 0 ? ((totalVenta - totalCosto) / totalVenta * 100).toFixed(2) + " %" : "";
+    const rentTotal  = totalCosto > 0 ? ((totalVenta - totalCosto) / totalCosto * 100).toFixed(2) + " %" : "";
     exportData.push({
       "Código":          "",
       "Producto":        "TOTALES",
