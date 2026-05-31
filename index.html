@@ -48,8 +48,9 @@
     <div class="search-bar">
       <div class="search-input-wrap">
         <span class="search-icon">⌕</span>
-        <input type="text" id="buscador" placeholder="Buscar por código o producto… (Enter)" autocomplete="off"/>
-        <button class="search-clear" id="btnLimpiar" title="Limpiar búsqueda">✕</button>
+        <input type="text" id="buscador" placeholder="Buscar por código o producto…" autocomplete="off"/>
+        <button type="button" class="search-clear" id="btnLimpiar" title="Limpiar búsqueda">✕</button>
+        <button type="button" class="search-go" id="btnBuscar" title="Buscar">🔍</button>
       </div>
       <div class="action-buttons">
         <button id="btnInflacion" class="btn btn-ghost">
@@ -237,10 +238,17 @@
     // ── Botón limpiar buscador ──
     const buscadorEl = document.getElementById("buscador");
     const btnLimpiar = document.getElementById("btnLimpiar");
+    const btnBuscar  = document.getElementById("btnBuscar");
+
     btnLimpiar.addEventListener("click", () => {
       buscadorEl.value = "";
       buscadorEl.focus();
-      if (typeof datosOriginales !== "undefined") renderTabla(datosOriginales);
+      buscadorEl.select();
+    });
+
+    // ── Botón buscar (para tablet sin Enter) ──
+    btnBuscar.addEventListener("click", () => {
+      buscadorEl.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
     });
 
     // ── Abrir precompra en una sola ventana ──
