@@ -129,9 +129,8 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ===============================
      BUSCADOR
   =============================== */
-  buscador.addEventListener("keydown", e => {
-    if (e.key !== "Enter") return;
-    e.preventDefault();
+  // Función de búsqueda reutilizable
+  function ejecutarBusqueda() {
     const term = buscador.value.trim().toLowerCase();
     if (!term) return;
     const resultados = productos.filter(p =>
@@ -139,6 +138,24 @@ document.addEventListener("DOMContentLoaded", () => {
       String(p.productos).toLowerCase().includes(term)
     );
     abrirModal(resultados);
+  }
+
+  buscador.addEventListener("keydown", e => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    ejecutarBusqueda();
+  });
+
+  // Botón buscar
+  const btnBuscar = document.getElementById("btnBuscar");
+  if (btnBuscar) btnBuscar.addEventListener("click", ejecutarBusqueda);
+
+  // Botón limpiar
+  const btnLimpiar = document.getElementById("btnLimpiar");
+  if (btnLimpiar) btnLimpiar.addEventListener("click", () => {
+    buscador.value = "";
+    buscador.focus();
+    buscador.select();
   });
 
   /* ===============================
