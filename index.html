@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="stats.css" />
   <link rel="stylesheet" href="inflacion.css" />
   <link rel="stylesheet" href="dolar.css" />
+  <link rel="stylesheet" href="reposicion.css" />
 </head>
 
 <body>
@@ -55,6 +56,9 @@
       <div class="action-buttons">
         <button id="btnInflacion" class="btn btn-ghost">
           <span>📈</span> Inflación
+        </button>
+        <button id="btnReposicion" class="btn btn-ghost">
+          <span>🚚</span> Reposición CD
         </button>
         <button id="btnMostrar" class="btn btn-secondary">
           <span>🛒</span> Ver seleccionados
@@ -214,6 +218,23 @@
     </div>
   </div>
 
+  <!-- ====== MODAL REPOSICIÓN (Centro de Distribución) ====== -->
+  <div id="modalReposicion" class="modal">
+    <div class="repo-content">
+      <div class="repo-header">
+        <div>
+          <h2>🚚 Panel de Reposición</h2>
+          <p class="repo-header-sub">Stock centro de distribución vs. sucursales</p>
+        </div>
+        <button class="modal-close" id="btnCerrarReposicion">✕</button>
+      </div>
+      <div class="repo-body">
+        <div class="repo-loading" id="repoLoading">Cargando panel…</div>
+        <iframe id="iframeReposicion" title="Panel de Reposición" loading="lazy"></iframe>
+      </div>
+    </div>
+  </div>
+
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
@@ -222,6 +243,7 @@
   <script src="stats.js"></script>
   <script src="inflacion.js"></script>
   <script src="dolar.js"></script>
+  <script src="reposicion.js"></script>
 
   <script>
     // ── Theme toggle ──
