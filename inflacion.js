@@ -45,15 +45,33 @@ document.querySelectorAll(".tab-inf").forEach(btn => {
 function renderTablaInflacion(data) {
   const tbody = document.getElementById("infTablaBody");
   tbody.innerHTML = "";
+
+  // Título de la columna
+  const th = tbody.closest("table").querySelector("thead th:nth-child(3)");
+  if (th) th.textContent = "Acumulado del año";
+
   let acum = 1;
-  data.forEach(({ mes, ipc }) => {
+  let anioActual = null;
+
+  data.forEach(({ mes, ipc }, i) => {
+    const anio = mes.split("-")[1];
+
+    // Reinicia el acumulado cuando cambia el año (cada enero)
+    if (anio !== anioActual) {
+      acum = 1;
+      anioActual = anio;
+    }
     acum *= (1 + ipc / 100);
+
+    // Diciembre (o el último mes cargado) muestra el total del año en negrita
+    const esCierre = mes.toLowerCase().startsWith("dic") || i === data.length - 1;
+
     const tr = document.createElement("tr");
     const cls = ipc >= 5 ? "inf-alta" : ipc >= 3 ? "inf-media" : "inf-baja";
     tr.innerHTML = `
       <td class="mes-label">${mes}</td>
       <td class="${cls}">${ipc.toFixed(1)}%</td>
-      <td>${((acum - 1) * 100).toFixed(1)}%</td>
+      <td${esCierre ? ' style="font-weight:700"' : ""}>${((acum - 1) * 100).toFixed(1)}%</td>
     `;
     tbody.appendChild(tr);
   });
