@@ -30,5 +30,6 @@
   { "mes": "may-26", "ipc": 2.1  },
   { "mes": "jun-26", "ipc": 1.9  },
   { "mes": "jul-26", "ipc": 2.1  },
-  { "mes": "Ago-26", "ipc": 1.7  }
+  { "mes": "Ago-26", "ipc": 1.7  },
+  { "mes": "Sep-26", "ipc": 1.9 }
 ]
