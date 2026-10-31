@@ -142,3 +142,29 @@
   .ofx-matriz .ofx-fijo1 { position: static; }
   .ofx-matriz .ofx-fijo2 { left: 0; min-width: 150px; }
 }
+
+/* ── Etiqueta BETA y aviso "En desarrollo" del botón ── */
+#btnOfertas.ofx-btn-beta { position: relative; }
+.ofx-beta {
+  margin-left: 6px; padding: 1px 6px; border-radius: 999px;
+  font-family: var(--font-data, monospace); font-size: .6rem; font-weight: 700; letter-spacing: .05em;
+  color: #1a1200; background: var(--warning, #ffb300); vertical-align: 2px;
+}
+#btnOfertas.ofx-btn-beta::after {
+  content: attr(data-aviso);
+  position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%) translateY(-4px);
+  width: 240px; padding: 8px 10px; z-index: 50;
+  background: var(--bg-elevated, #1f2630); color: var(--text-primary, #e6edf3);
+  border: 1px solid var(--warning, #ffb300); border-radius: var(--radius-sm, 6px);
+  box-shadow: var(--shadow-card, 0 8px 24px rgba(0,0,0,.35));
+  font-family: var(--font-ui, 'DM Sans', sans-serif); font-size: .78rem; font-weight: 400; line-height: 1.35;
+  text-align: left; white-space: normal;
+  opacity: 0; pointer-events: none; transition: opacity .15s, transform .15s;
+}
+#btnOfertas.ofx-btn-beta:hover::after, #btnOfertas.ofx-btn-beta:focus-visible::after { opacity: 1; transform: translateX(-50%) translateY(0); }
+@media (hover: none) { #btnOfertas.ofx-btn-beta::after { display: none; } }
+.ofx-aviso-beta {
+  margin: 0 0 10px; padding: 7px 10px; font-size: .8rem;
+  border: 1px dashed var(--warning, #ffb300); border-radius: var(--radius-sm, 6px);
+  color: var(--text-secondary, #c9d1d9); background: rgba(255, 179, 0, .07);
+}

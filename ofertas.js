@@ -12,6 +12,8 @@
   const SEMANAS_HISTORIAL = 12;                             // para "Vs. historial"
   // false = se ven sin usuario (requiere ofertas_sin_login.sql en Supabase). true = pide email y contraseña
   const PEDIR_LOGIN = false;
+  // true = el botón muestra la etiqueta BETA y el aviso "En desarrollo" al pasar el mouse. Cuando esté listo, poner false
+  const EN_DESARROLLO = true;
 
   let cliente = null;
   let datos = null;            // { filas, porCodigo, proveedores, cargado }
@@ -42,7 +44,12 @@
     if (!botones || $o('#btnOfertas')) return;
     const b = document.createElement('button');
     b.id = 'btnOfertas'; b.type = 'button'; b.className = 'btn btn-ghost';
-    b.innerHTML = '<span>💲</span> Ofertas';
+    b.innerHTML = '<span>💲</span> Ofertas' + (EN_DESARROLLO ? '<span class="ofx-beta">BETA</span>' : '');
+    if (EN_DESARROLLO) {
+      b.classList.add('ofx-btn-beta');
+      b.dataset.aviso = 'En desarrollo: todavía se están cargando ofertas y el historial se va completando semana a semana.';
+      b.setAttribute('aria-label', 'Ofertas (en desarrollo)');
+    }
     botones.insertBefore(b, botones.firstChild);
     b.addEventListener('click', abrir);
 
@@ -269,6 +276,7 @@
         <button class="btn btn-secondary" id="ofxActualizar" title="Volver a leer las ofertas">⟳ Actualizar</button>
         ${PEDIR_LOGIN ? '<button class="btn btn-ghost" id="ofxSalir" title="Cerrar sesión en esta PC">Salir</button>' : ''}
       </div>
+      ${EN_DESARROLLO ? '<p class="ofx-aviso-beta">🚧 <b>En desarrollo:</b> todavía se están cargando ofertas y el historial se va completando semana a semana.</p>' : ''}
       <div class="ofx-tabla-wrap ofx-matriz-wrap"><table class="ofx-tabla ofx-matriz" id="ofxTabla"></table></div>
       <p class="ofx-chico ofx-tenue">Cada columna es un proveedor con su <b>costo final</b> y la fecha en que se cargó. ★ verde = el más barato, rojo = el más caro, apagado = vencida. Pasá el mouse por un precio para ver hasta cuándo vale y cómo lo escribió el proveedor. Margen sobre tu precio de venta. Tocá un producto para ver su historial.</p>`);
     const buscar = $o('#ofxBuscar');
