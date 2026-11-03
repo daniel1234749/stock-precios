@@ -149,7 +149,7 @@
       const [provs, ofertas] = await Promise.all([
         traerTodo(() => cliente.from('proveedores').select('clave,nombre').order('clave')),
         traerTodo(() => cliente.from('ofertas')
-          .select('clave,codigo,proveedor_id,fecha,precio,costo_final,contado,vigencia_hasta,texto_proveedor')
+          .select('clave,codigo,proveedor_id,fecha,precio,costo_final,contado,vigencia_hasta,texto_proveedor,condicion:datos->>condicion')
           .gte('fecha', desde).order('clave')),
         cargarPreciosVenta()
       ]);
@@ -247,12 +247,15 @@
     ? `<span class="ofx-pill ofx-${v.clase}" title="Mejor precio visto: ${esc(pesos(v.mejor.costo))} (${esc(v.mejor.proveedor)}, ${fechaCorta(v.mejor.fecha)}) · Habitual: ${esc(pesos(v.habitual))} · ${v.semanas} semanas">${v.texto}${v.clase !== 'record' ? ` ${v.vs > 0 ? '+' : ''}${pct(v.vs)}` : ''}</span>`
     : '<span class="ofx-tenue ofx-chico" title="Hacen falta al menos 2 semanas anteriores con precios">sin historial</span>';
 
+  // Condición de pago (Maxiconsumo): MP+Voucher / Solo MP. El precio es el de lista
+  const chipCond = (c, corta = false) => c ? `<span class="ofx-cond ${c === 'Solo MP' ? 'ofx-solo-mp' : ''}" title="${c === 'Solo MP' ? 'Descuento solo con Mercado Pago' : 'Descuento con Mercado Pago + voucher'} (precio de lista)">${corta ? (c === 'Solo MP' ? 'MP' : 'MP+V') : c}</span>` : '';
   const hora = iso => { const d = new Date(iso); return `${dos(d.getHours())}:${dos(d.getMinutes())}`; };
   function tituloCelda(o, venta) {
     return [
       o.proveedor,
       `Cargado: ${fechaCorta(o.fecha)} ${hora(o.fecha)}`,
       o.vigencia_hasta ? `Vigente hasta: ${fechaCorta(o.vigencia_hasta)}${vigente(o) ? '' : ' (VENCIDA)'}` : '',
+      o.condicion ? `Condición: ${o.condicion} (precio de lista, sin descontar)` : '',
       `Como lo escribió: ${o.texto_proveedor || '—'}`,
       `Costo final: ${pesos(o.costo)}`,
       venta ? `Margen: ${pct(margen(venta, o.costo))}` : ''
@@ -329,7 +332,7 @@
             if (!o) return '<td class="ofx-num ofx-celda ofx-tenue">—</td>';
             const esMejor = o === f.mejor && f.r.length > 1;
             const clase = esMejor ? 'ofx-mejor' : o === peor ? 'ofx-peor' : '';
-            return `<td class="ofx-num ofx-celda ${clase} ${vigente(o) ? '' : 'ofx-vencida'}" title="${esc(tituloCelda(o, f.venta))}">${esMejor ? '★ ' : ''}${pesos(o.costo)}<span class="ofx-fecha">${fechaCorta(o.fecha)}</span></td>`;
+            return `<td class="ofx-num ofx-celda ${clase} ${vigente(o) ? '' : 'ofx-vencida'}" title="${esc(tituloCelda(o, f.venta))}">${esMejor ? '★ ' : ''}${pesos(o.costo)}<span class="ofx-fecha">${chipCond(o.condicion, true)}${fechaCorta(o.fecha)}</span></td>`;
           }).join('')}
           <td class="ofx-num"><span class="ofx-margen ${claseMargen(f.margen)}">${pct(f.margen)}</span></td>
           <td>${etiqueta(f.veredicto)}</td>
@@ -362,7 +365,7 @@
         <div class="ofx-tabla-wrap"><table class="ofx-tabla">
           <thead><tr><th>#</th><th>Proveedor</th><th class="ofx-num">Costo</th><th class="ofx-num">Margen</th><th>Cargada</th><th>Vence</th><th>Cómo lo escribió</th></tr></thead>
           <tbody>${f.r.length ? f.r.map((o, i) => `
-            <tr class="${vigente(o) ? '' : 'ofx-vencida'}"><td>${i + 1}</td><td><b>${esc(o.proveedor)}</b></td>
+            <tr class="${vigente(o) ? '' : 'ofx-vencida'}"><td>${i + 1}</td><td><b>${esc(o.proveedor)}</b>${chipCond(o.condicion)}</td>
               <td class="ofx-num ${i === 0 && f.r.length > 1 ? 'ofx-mejor' : ''}">${i === 0 && f.r.length > 1 ? '★ ' : ''}${pesos(o.costo)}</td>
               <td class="ofx-num ${claseMargen(margen(f.venta, o.costo))}">${pct(margen(f.venta, o.costo))}</td>
               <td class="ofx-chico">${fechaCorta(o.fecha)}</td><td class="ofx-chico">${o.vigencia_hasta ? fechaCorta(o.vigencia_hasta) + (vigente(o) ? '' : ' (vencida)') : '—'}</td>
