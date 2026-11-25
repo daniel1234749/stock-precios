@@ -94,8 +94,12 @@ function normalizarProducto(p) {
   }
   claveMes.sort((a, b) => a.orden - b.orden);
 
+  const NOMBRES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+  norm._meses = [];   // etiquetas reales de cada mes, sacadas de las claves (ej. "Ene-25")
   claveMes.forEach(({ key }, i) => {
     norm["vta_mes_" + (i + 1)] = p[key] ?? 0;
+    const [mes, anio] = key.split("_");
+    norm._meses.push(NOMBRES[MESES_MAP[mes] - 1] + "-" + anio);
   });
 
   return norm;
@@ -138,7 +142,10 @@ function extraerVentas(producto) {
 function labelsParaProducto(producto) {
   const total = contarMeses(producto);
   const desde = Math.max(1, total - statsMostrar + 1);
-  return generarLabels(total).slice(desde - 1);
+  // Si el JSON trae los nombres de los meses (ene_25, feb_25…), se usan esos: así las etiquetas
+  // siguen siendo correctas aunque el archivo crezca o arranque en otro mes.
+  const todas = producto._meses && producto._meses.length === total ? producto._meses : generarLabels(total);
+  return todas.slice(desde - 1);
 }
 
 // ── Calcular KPIs ───────────────────────────────────────────
@@ -335,6 +342,16 @@ async function actualizarModalStats(sucursal) {
   renderTablaStats(ventas, prod.uxb);
 }
 
+// ── Cuántos meses hay guardados para un producto (el máximo entre sucursales) ──
+async function mesesDisponibles(codigos) {
+  let max = 0;
+  for (const s of Object.keys(STATS_CONFIG.archivos)) {
+    const prod = normalizarProducto(encontrarProducto(await cargarStats(s), codigos));
+    if (prod) max = Math.max(max, contarMeses(prod));
+  }
+  return max;
+}
+
 // ── Abrir modal ─────────────────────────────────────────────
 async function abrirModalStats(codigos, nombreProducto, uxb) {
   statsProductoActual = { codigos, productos: nombreProducto, uxb: uxb || 1 };
@@ -367,8 +384,14 @@ async function abrirModalStats(codigos, nombreProducto, uxb) {
   statsMostrar = 12;
   btnToggle.textContent = "Ver 24 meses";
   btnToggle.onclick = async () => {
-    statsMostrar = statsMostrar === 12 ? 24 : 12;
-    btnToggle.textContent = statsMostrar === 12 ? "Ver 24 meses" : "Ver 12 meses";
+    // 12 → 24 → todos los meses guardados (si hay más de 24) → 12
+    const disponibles = await mesesDisponibles(codigos);
+    if (statsMostrar === 12) statsMostrar = 24;
+    else if (statsMostrar === 24 && disponibles > 24) statsMostrar = 9999;
+    else statsMostrar = 12;
+    const siguiente = statsMostrar === 12 ? (disponibles > 12 ? "Ver 24 meses" : "Ver 12 meses")
+      : statsMostrar === 24 && disponibles > 24 ? `Ver todo (${disponibles} meses)` : "Ver 12 meses";
+    btnToggle.textContent = siguiente;
     await actualizarModalStats(statsSucursal);
   };
 
